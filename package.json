@@ -11,6 +11,8 @@
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
     "handtrackjs": "^0.0.13",
+    "husky": "^4.3.0",
+    "lint-staged": "^10.4.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3",
@@ -21,7 +23,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "eslint . --ext .ts,.tsx"
+    "lint": "eslint . --ext .ts,.tsx",
+    "prettier:all": "prettier --write \"**/*.{js,ts,tsx,json,md,*rc}\""
   },
   "browserslist": {
     "production": [
@@ -42,5 +45,15 @@
     "eslint-plugin-react": "^7.21.3",
     "eslint-plugin-react-hooks": "^4.1.2",
     "prettier": "^2.1.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "yarn run prettier:all"
+    ]
   }
 }
