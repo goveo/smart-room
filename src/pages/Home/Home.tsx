@@ -1,21 +1,16 @@
-import * as React from 'react';
-import Head from 'next/head';
-import styles from '../styles/Home.module.css';
+import React from 'react';
+import styles from './Home.module.css';
+import { HandDetector } from '../../components/HandDetector';
 
-const Home: React.FC = () => {
+export const Home: React.FC = () => {
   return (
     <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
       <main className={styles.main}>
         <h1 className={styles.title}>Welcome to Smart Room</h1>
+        <HandDetector></HandDetector>
         <p className={styles.description}>Smart Room Application Based on Gesture Control</p>
       </main>
     </div>
   );
 };
-
 export default Home;
