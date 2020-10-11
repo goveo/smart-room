@@ -9,18 +9,19 @@ export const modelParams = {
   scoreThreshold: 0.79, // confidence threshold for predictions.
 };
 
-export const detectionInterval = 100; // in ms
+export const detectionInterval = 50; // in ms
 
-export interface Coords {
+export interface Point {
   x?: number;
   y?: number;
 }
 
 export const HandDetector: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const [model, setModel] = useState<ObjectDetection>();
-  const [hand1Coords, setHand1Coords] = useState<Coords>({});
-  const [hand2Coords, setHand2Coords] = useState<Coords>({});
+  const [hand1Position, setHand1Position] = useState<Point>({});
+  const [hand2Position, setHand2Position] = useState<Point>({});
 
   const runDetection = useCallback(() => {
     if (!model) return;
@@ -29,12 +30,12 @@ export const HandDetector: React.FC = () => {
         // if hands on screen - set coords
         const [x1, y1] = predictions[0].bbox;
         const [x2, y2] = predictions[1] ? predictions[1].bbox : [];
-        setHand1Coords({ x: Math.round(x1), y: Math.round(y1) });
-        setHand2Coords({ x: Math.round(x2), y: Math.round(y2) });
+        setHand1Position({ x: Math.round(x1), y: Math.round(y1) });
+        setHand2Position({ x: Math.round(x2), y: Math.round(y2) });
       } else {
         // else - remove coords
-        setHand1Coords({});
-        setHand2Coords({});
+        setHand1Position({});
+        setHand2Position({});
       }
     });
   }, [model]);
@@ -54,27 +55,34 @@ export const HandDetector: React.FC = () => {
           (stream) => {
             if (!videoRef.current) return;
             videoRef.current.srcObject = stream;
+            setLoading(false);
             setInterval(runDetection, detectionInterval);
           },
           (error) => console.error(error),
         );
       }
     });
-  }, [runDetection]);
+  }, [runDetection, setLoading]);
 
   return (
     <>
       <video ref={videoRef} />
-      <span>
-        Hand1
-        <div>x: {hand1Coords.x}</div>
-        <div>y: {hand1Coords.y}</div>
-      </span>
-      <span>
-        Hand2
-        <div>x: {hand2Coords.x}</div>
-        <div>y: {hand2Coords.y}</div>
-      </span>
+      {loading ? (
+        <div>Loading...</div>
+      ) : (
+        <>
+          <span>
+            Hand1
+            <div>x: {hand1Position.x}</div>
+            <div>y: {hand1Position.y}</div>
+          </span>
+          <span>
+            Hand2
+            <div>x: {hand2Position.x}</div>
+            <div>y: {hand2Position.y}</div>
+          </span>
+        </>
+      )}
     </>
   );
 };
