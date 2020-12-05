@@ -26,7 +26,7 @@ const AuthState = ({ children }: { children: any }): any => {
     } catch (error) {
       dispatch({
         type: REGISTER_FAIL,
-        payload: error.response.data.message || (error.response.data.errors[0] && error.response.data.errors[0].msg),
+        payload: error?.response?.data?.message || error,
       });
     }
   };
@@ -41,7 +41,7 @@ const AuthState = ({ children }: { children: any }): any => {
     } catch (error) {
       dispatch({
         type: LOGIN_FAIL,
-        payload: error.response.data.message,
+        payload: error?.response?.data?.message || error,
       });
     }
   };

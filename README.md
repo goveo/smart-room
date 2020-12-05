@@ -12,7 +12,13 @@ Participants:
 
 ### Getting Started
 
-First, run the development server:
+First, install dependencies:
+
+```bash
+yarn install
+```
+
+Run the development server:
 
 ```bash
 npm run start
