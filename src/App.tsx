@@ -1,19 +1,21 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import { API_URL } from './app.config';
-import Login from './components/pages/Login';
-import Logout from './components/pages/Logout';
-import Register from './components/pages/Register';
+import Login from './pages/Login';
+import Logout from './pages/Logout';
+import Register from './pages/Register';
 import PrivateRoute from './components/routing/PrivateRoute';
 import AuthState from './context/auth/authState';
 import HomePage from './pages/Home/Home';
 import setBaseUrl from './utils/setBaseUrl';
+import Navbar from './components/Navbar';
 
 setBaseUrl(API_URL);
 
 const App: React.FC = () => {
   return (
     <AuthState>
+      <Navbar />
       <Router>
         <div className="App">
           <Switch>
