@@ -21,6 +21,8 @@ export interface Point {
 export const emptyPoint = { x: NaN, y: NaN };
 export const swipeSensitivity = 20; // in px
 export const detectionInterval = 50; // in ms
+export const videoWidth = 600; // in px
+export const videoHeight = (videoWidth / 16) * 9;
 
 interface Props {
   onSwipeLeft?: () => void;
@@ -139,12 +141,17 @@ export const HandDetector: React.FC<Props> = ({ onSwipeLeft, onSwipeRight, onSwi
   }
 
   return (
-    <>
-      <video ref={videoRef} />
+    <Container>
+      <video ref={videoRef} width={videoWidth} height={videoHeight} />
       {loading && <div>Loading...</div>}
-    </>
+    </Container>
   );
 };
+
+const Container = styled.div`
+  height: ${videoHeight}px;
+  width: ${videoWidth}px;
+`;
 
 const ErrorMessage = styled(Alert)`
   margin: 20px;
