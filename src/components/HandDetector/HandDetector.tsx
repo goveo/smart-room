@@ -27,9 +27,10 @@ interface Props {
   onSwipeRight?: () => void;
   onSwipeUp?: () => void;
   onSwipeDown?: () => void;
+  onHandsUp?: () => void;
 }
 
-export const HandDetector: React.FC<Props> = ({ onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown }) => {
+export const HandDetector: React.FC<Props> = ({ onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, onHandsUp }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -98,6 +99,7 @@ export const HandDetector: React.FC<Props> = ({ onSwipeLeft, onSwipeRight, onSwi
     setPrevHand1Positions((value) => [value[1], value[2], hand1Position]);
   }, [setPrevHand1Positions, hand1Position]);
 
+  // swipes
   useEffect(() => {
     const swipeDown = prevHand1Positions.every((point, index, arr) => {
       if (index === 0) return true;
@@ -124,6 +126,13 @@ export const HandDetector: React.FC<Props> = ({ onSwipeLeft, onSwipeRight, onSwi
     if (swipeRight && onSwipeRight) onSwipeRight();
     if (swipeLeft && onSwipeLeft) onSwipeLeft();
   }, [prevHand1Positions, onSwipeDown, onSwipeUp, onSwipeRight, onSwipeLeft]);
+
+  // hands up
+  useEffect(() => {
+    if (!isNaN(hand1Position.x + hand1Position.y) && !isNaN(hand2Position.x + hand2Position.y) && onHandsUp) {
+      onHandsUp();
+    }
+  }, [hand1Position, hand2Position, onHandsUp]);
 
   if (errorMessage) {
     return <ErrorMessage severity="error">{errorMessage}</ErrorMessage>;

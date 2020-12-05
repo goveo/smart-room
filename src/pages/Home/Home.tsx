@@ -18,6 +18,7 @@ export const Home: React.FC = () => {
             onSwipeDown={() => console.log('onSwipeDown')}
             onSwipeLeft={() => console.log('onSwipeLeft')}
             onSwipeRight={() => console.log('onSwipeRight')}
+            onHandsUp={() => console.log('onHandsUp')}
             /* eslint-enable no-console */
           />
         </Grid>
