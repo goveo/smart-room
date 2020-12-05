@@ -19,6 +19,7 @@ const App: React.FC = () => {
       <Router>
         <div className="App">
           <Switch>
+            {/* @NOTE: Change 'PrivateRoute' to 'Route' to remove login */}
             <PrivateRoute exact path="/" component={HomePage}></PrivateRoute>
             <Route exact path="/login" component={Login}></Route>
             <Route exact path="/logout" component={Logout}></Route>

@@ -3,6 +3,8 @@ import { load as loadModel, startVideo, Prediction, ObjectDetection } from 'hand
 import styled from 'styled-components';
 import { Alert } from '@material-ui/lab';
 
+import { FixedArray } from '../../types/FixedArray';
+
 export const modelParams = {
   flipHorizontal: false, // flip e.g for video
   imageScaleFactor: 0.7, // reduce input image size for (maybe) gains in speed.
@@ -11,20 +13,35 @@ export const modelParams = {
   scoreThreshold: 0.79, // confidence threshold for predictions.
 };
 
-export const detectionInterval = 50; // in ms
-
 export interface Point {
-  x?: number;
-  y?: number;
+  x: number;
+  y: number;
 }
 
-export const HandDetector: React.FC = () => {
+export const emptyPoint = { x: NaN, y: NaN };
+export const swipeSensitivity = 20; // in px
+export const detectionInterval = 50; // in ms
+
+interface Props {
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
+  onSwipeUp?: () => void;
+  onSwipeDown?: () => void;
+}
+
+export const HandDetector: React.FC<Props> = ({ onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [model, setModel] = useState<ObjectDetection>();
-  const [hand1Position, setHand1Position] = useState<Point>({});
-  const [hand2Position, setHand2Position] = useState<Point>({});
+  const [hand1Position, setHand1Position] = useState<Point>(emptyPoint);
+  const [hand2Position, setHand2Position] = useState<Point>(emptyPoint);
+
+  const [prevHand1Positions, setPrevHand1Positions] = useState<FixedArray<Point, 3>>([
+    emptyPoint,
+    emptyPoint,
+    emptyPoint,
+  ]);
 
   const runDetection = useCallback(() => {
     if (!model) return;
@@ -37,8 +54,8 @@ export const HandDetector: React.FC = () => {
         setHand2Position({ x: Math.round(x2), y: Math.round(y2) });
       } else {
         // else - remove coords
-        setHand1Position({});
-        setHand2Position({});
+        setHand1Position(emptyPoint);
+        setHand2Position(emptyPoint);
       }
     });
   }, [model]);
@@ -77,6 +94,37 @@ export const HandDetector: React.FC = () => {
       });
   }, [runDetection, setLoading, setErrorMessage, errorMessage]);
 
+  useEffect(() => {
+    setPrevHand1Positions((value) => [value[1], value[2], hand1Position]);
+  }, [setPrevHand1Positions, hand1Position]);
+
+  useEffect(() => {
+    const swipeDown = prevHand1Positions.every((point, index, arr) => {
+      if (index === 0) return true;
+      return point.y - arr[index - 1].y >= swipeSensitivity;
+    });
+
+    const swipeUp = prevHand1Positions.every((point, index, arr) => {
+      if (index === 0) return true;
+      return arr[index - 1].y - point.y >= swipeSensitivity;
+    });
+
+    const swipeLeft = prevHand1Positions.every((point, index, arr) => {
+      if (index === 0) return true;
+      return point.x - arr[index - 1].x >= swipeSensitivity;
+    });
+
+    const swipeRight = prevHand1Positions.every((point, index, arr) => {
+      if (index === 0) return true;
+      return arr[index - 1].x - point.x >= swipeSensitivity;
+    });
+
+    if (swipeDown && onSwipeDown) onSwipeDown();
+    if (swipeUp && onSwipeUp) onSwipeUp();
+    if (swipeRight && onSwipeRight) onSwipeRight();
+    if (swipeLeft && onSwipeLeft) onSwipeLeft();
+  }, [prevHand1Positions, onSwipeDown, onSwipeUp, onSwipeRight, onSwipeLeft]);
+
   if (errorMessage) {
     return <ErrorMessage severity="error">{errorMessage}</ErrorMessage>;
   }
@@ -84,22 +132,7 @@ export const HandDetector: React.FC = () => {
   return (
     <>
       <video ref={videoRef} />
-      {loading ? (
-        <div>Loading...</div>
-      ) : (
-        <>
-          <span>
-            Hand1
-            <div>x: {hand1Position.x}</div>
-            <div>y: {hand1Position.y}</div>
-          </span>
-          <span>
-            Hand2
-            <div>x: {hand2Position.x}</div>
-            <div>y: {hand2Position.y}</div>
-          </span>
-        </>
-      )}
+      {loading && <div>Loading...</div>}
     </>
   );
 };
