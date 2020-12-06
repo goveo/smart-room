@@ -1,6 +1,6 @@
 # smart-room
 
-## Smart Room Application Based on Gesture Control
+## Smart Room Application Based on Gesture Control (Front-end)
 
 Participants:
 
@@ -12,7 +12,9 @@ Participants:
 
 ### Getting Started
 
-First, install dependencies:
+First, run back-end server: https://github.com/firefly114/BE.smart-room (don't forget to set .env file)
+
+Install dependencies:
 
 ```bash
 yarn install
