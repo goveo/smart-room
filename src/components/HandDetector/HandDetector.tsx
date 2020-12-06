@@ -13,6 +13,7 @@ export const modelParams = {
   scoreThreshold: 0.79, // confidence threshold for predictions.
 };
 
+export type Gesture = 'SwipeUp' | 'SwipeDown' | 'SwipeLeft' | 'SwipeRight' | 'HandsUp';
 export interface Point {
   x: number;
   y: number;
@@ -23,6 +24,7 @@ export const swipeSensitivity = 20; // in px
 export const detectionInterval = 50; // in ms
 export const videoWidth = 600; // in px
 export const videoHeight = (videoWidth / 16) * 9;
+export const gestureCooldownMS = 1500;
 
 interface Props {
   onSwipeLeft?: () => void;
@@ -39,6 +41,8 @@ export const HandDetector: React.FC<Props> = ({ onSwipeLeft, onSwipeRight, onSwi
   const [model, setModel] = useState<ObjectDetection>();
   const [hand1Position, setHand1Position] = useState<Point>(emptyPoint);
   const [hand2Position, setHand2Position] = useState<Point>(emptyPoint);
+
+  const [isGestureCooldown, setIsGestureCooldown] = useState(false);
 
   const [prevHand1Positions, setPrevHand1Positions] = useState<FixedArray<Point, 3>>([
     emptyPoint,
@@ -101,6 +105,24 @@ export const HandDetector: React.FC<Props> = ({ onSwipeLeft, onSwipeRight, onSwi
     setPrevHand1Positions((value) => [value[1], value[2], hand1Position]);
   }, [setPrevHand1Positions, hand1Position]);
 
+  const setGestureCooldown = useCallback(() => {
+    setIsGestureCooldown(true);
+    setTimeout(() => setIsGestureCooldown(false), gestureCooldownMS);
+  }, [setIsGestureCooldown]);
+
+  const processGesture = useCallback(
+    (gesture: Gesture) => {
+      if (isGestureCooldown) return;
+      if (gesture === 'SwipeDown' && onSwipeDown) onSwipeDown();
+      if (gesture === 'SwipeUp' && onSwipeUp) onSwipeUp();
+      if (gesture === 'SwipeRight' && onSwipeRight) onSwipeRight();
+      if (gesture === 'SwipeLeft' && onSwipeLeft) onSwipeLeft();
+      if (gesture === 'HandsUp' && onHandsUp) onHandsUp();
+      setGestureCooldown();
+    },
+    [isGestureCooldown, onSwipeDown, onSwipeUp, onSwipeLeft, onSwipeRight, onHandsUp, setGestureCooldown],
+  );
+
   // swipes
   useEffect(() => {
     const swipeDown = prevHand1Positions.every((point, index, arr) => {
@@ -123,18 +145,18 @@ export const HandDetector: React.FC<Props> = ({ onSwipeLeft, onSwipeRight, onSwi
       return arr[index - 1].x - point.x >= swipeSensitivity;
     });
 
-    if (swipeDown && onSwipeDown) onSwipeDown();
-    if (swipeUp && onSwipeUp) onSwipeUp();
-    if (swipeRight && onSwipeRight) onSwipeRight();
-    if (swipeLeft && onSwipeLeft) onSwipeLeft();
-  }, [prevHand1Positions, onSwipeDown, onSwipeUp, onSwipeRight, onSwipeLeft]);
+    if (swipeDown) processGesture('SwipeDown');
+    if (swipeUp) processGesture('SwipeUp');
+    if (swipeRight) processGesture('SwipeRight');
+    if (swipeLeft) processGesture('SwipeLeft');
+  }, [prevHand1Positions, processGesture]);
 
   // hands up
   useEffect(() => {
-    if (!isNaN(hand1Position.x + hand1Position.y) && !isNaN(hand2Position.x + hand2Position.y) && onHandsUp) {
-      onHandsUp();
+    if (!isNaN(hand1Position.x + hand1Position.y) && !isNaN(hand2Position.x + hand2Position.y)) {
+      processGesture('HandsUp');
     }
-  }, [hand1Position, hand2Position, onHandsUp]);
+  }, [hand1Position, hand2Position, processGesture]);
 
   if (errorMessage) {
     return <ErrorMessage severity="error">{errorMessage}</ErrorMessage>;

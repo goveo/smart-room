@@ -1,8 +1,7 @@
 import { Grid, Select, Input, MenuItem } from '@material-ui/core';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Device } from '../../pages/Home/Home';
-
-export type Gesture = 'SwipeUp' | 'SwipeDown' | 'SwipeLeft' | 'SwipeRight' | 'HandsUp';
+import { Gesture } from '../HandDetector/HandDetector';
 
 export type DeviceActions = {
   [device in Device]: Gesture;

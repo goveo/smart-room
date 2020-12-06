@@ -12,7 +12,8 @@ import { DeviceButton } from '../../components/DeviceButton';
 import { HandDetector } from '../../components/HandDetector';
 import { Page } from '../../components/Page';
 import { GestureSelector } from '../../components/GestureSelector';
-import { DeviceActions, Gesture } from '../../components/GestureSelector/GestureSelector';
+import { DeviceActions } from '../../components/GestureSelector/GestureSelector';
+import { Gesture } from '../../components/HandDetector/HandDetector';
 
 export type Device = 'TV' | 'Kettle' | 'Playstation' | 'Conditioner' | 'Fan';
 
