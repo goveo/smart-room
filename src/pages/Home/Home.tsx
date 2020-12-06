@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import styled from 'styled-components';
 import { Grid } from '@material-ui/core';
 
 import { ReactComponent as TVIcon } from '../../assets/devices/tv.svg';
@@ -10,13 +11,53 @@ import { ReactComponent as FanIcon } from '../../assets/devices/fan.svg';
 import { DeviceButton } from '../../components/DeviceButton';
 import { HandDetector } from '../../components/HandDetector';
 import { Page } from '../../components/Page';
+import { GestureSelector } from '../../components/GestureSelector';
+import { DeviceActions, Gesture } from '../../components/GestureSelector/GestureSelector';
+
+export type Device = 'TV' | 'Kettle' | 'Playstation' | 'Conditioner' | 'Fan';
 
 export const Home: React.FC = () => {
-  const [tvActive, setTVive] = useState(false);
-  const [kettleActive, setKettleActive] = useState(false);
-  const [playstationActive, setPlaystationActive] = useState(false);
-  const [conditionerActive, setConditionerActive] = useState(false);
-  const [fanActive, setFanActive] = useState(false);
+  const [activeDevices, setActiveDevices] = useState<Device[]>([]);
+  const [deviceActions, setDeviceActions] = useState<DeviceActions>({
+    TV: 'SwipeUp',
+    Kettle: 'SwipeDown',
+    Playstation: 'SwipeLeft',
+    Conditioner: 'SwipeRight',
+    Fan: 'HandsUp',
+  });
+
+  const devices = useMemo<Device[]>(() => ['TV', 'Kettle', 'Playstation', 'Conditioner', 'Fan'], []);
+
+  const getDevicesByGesture = useCallback(
+    (gesture: Gesture) => {
+      return Object.entries(deviceActions).reduce((devices: Device[], [key, value]) => {
+        if (value === gesture) {
+          devices.push(key as Device);
+        }
+        return devices;
+      }, []);
+    },
+    [deviceActions],
+  );
+
+  const toggleDevice = useCallback(
+    (deviceName: Device) => {
+      setActiveDevices((activeDevices) => {
+        if (activeDevices.includes(deviceName)) {
+          return activeDevices.filter((device: string) => device !== deviceName);
+        }
+        return [...activeDevices, deviceName];
+      });
+    },
+    [setActiveDevices],
+  );
+
+  const toggleDeviceByGesture = useCallback(
+    (gesture: Gesture) => {
+      getDevicesByGesture(gesture).map((device) => toggleDevice(device));
+    },
+    [getDevicesByGesture, toggleDevice],
+  );
 
   return (
     <Page>
@@ -24,26 +65,32 @@ export const Home: React.FC = () => {
         <Grid item xs={10} lg={5}>
           <h4>You:</h4>
           <HandDetector
-            /* eslint-disable no-console */
-            onSwipeUp={() => console.log('onSwipeUp')}
-            onSwipeDown={() => console.log('onSwipeDown')}
-            onSwipeLeft={() => console.log('onSwipeLeft')}
-            onSwipeRight={() => console.log('onSwipeRight')}
-            onHandsUp={() => console.log('onHandsUp')}
-            /* eslint-enable no-console */
+            onSwipeUp={(): void => toggleDeviceByGesture('SwipeUp')}
+            onSwipeDown={(): void => toggleDeviceByGesture('SwipeDown')}
+            onSwipeLeft={(): void => toggleDeviceByGesture('SwipeLeft')}
+            onSwipeRight={(): void => toggleDeviceByGesture('SwipeRight')}
+            onHandsUp={(): void => toggleDeviceByGesture('HandsUp')}
           />
+          <GestureSelectorContainer>
+            <h4>Gestures:</h4>
+            <GestureSelector devices={devices} onChange={setDeviceActions} />
+          </GestureSelectorContainer>
         </Grid>
         <Grid item xs={10} lg={5}>
           <h4>Devices status:</h4>
           <Grid container item xs={12} spacing={3}>
             <Grid item xs={12} lg={6}>
-              <DeviceButton icon={TVIcon} isActive={tvActive} onClick={(): void => setTVive((value) => !value)} />
+              <DeviceButton
+                icon={TVIcon}
+                isActive={activeDevices.includes('TV')}
+                onClick={(): void => toggleDevice('TV')}
+              />
             </Grid>
             <Grid item xs={12} lg={6}>
               <DeviceButton
                 icon={KettleIcon}
-                isActive={kettleActive}
-                onClick={(): void => setKettleActive((value) => !value)}
+                isActive={activeDevices.includes('Kettle')}
+                onClick={(): void => toggleDevice('Kettle')}
               />
             </Grid>
           </Grid>
@@ -51,21 +98,25 @@ export const Home: React.FC = () => {
             <Grid item xs={12} lg={6}>
               <DeviceButton
                 icon={PlaystationIcon}
-                isActive={playstationActive}
-                onClick={(): void => setPlaystationActive((value) => !value)}
+                isActive={activeDevices.includes('Playstation')}
+                onClick={(): void => toggleDevice('Playstation')}
               />
             </Grid>
             <Grid item xs={12} lg={6}>
               <DeviceButton
                 icon={ConditionerIcon}
-                isActive={conditionerActive}
-                onClick={(): void => setConditionerActive((value) => !value)}
+                isActive={activeDevices.includes('Conditioner')}
+                onClick={(): void => toggleDevice('Conditioner')}
               />
             </Grid>
           </Grid>
           <Grid container item xs={12} spacing={3}>
             <Grid item xs={12} lg={6}>
-              <DeviceButton icon={FanIcon} isActive={fanActive} onClick={(): void => setFanActive((value) => !value)} />
+              <DeviceButton
+                icon={FanIcon}
+                isActive={activeDevices.includes('Fan')}
+                onClick={(): void => toggleDevice('Fan')}
+              />
             </Grid>
           </Grid>
         </Grid>
@@ -73,5 +124,9 @@ export const Home: React.FC = () => {
     </Page>
   );
 };
+
+const GestureSelectorContainer = styled.div`
+  margin-top: 10vh;
+`;
 
 export default Home;
