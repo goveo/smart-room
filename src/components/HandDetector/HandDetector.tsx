@@ -52,19 +52,26 @@ export const HandDetector: React.FC<Props> = ({ onSwipeLeft, onSwipeRight, onSwi
 
   const runDetection = useCallback(() => {
     if (!model) return;
-    model.detect(videoRef.current).then((predictions: Array<Prediction>) => {
-      if (predictions.length) {
-        // if hands on screen - set coords
-        const [x1, y1] = predictions[0].bbox;
-        const [x2, y2] = predictions[1] ? predictions[1].bbox : [];
-        setHand1Position({ x: Math.round(x1), y: Math.round(y1) });
-        setHand2Position({ x: Math.round(x2), y: Math.round(y2) });
-      } else {
-        // else - remove coords
-        setHand1Position(emptyPoint);
-        setHand2Position(emptyPoint);
-      }
-    });
+    try {
+      model
+        .detect(videoRef.current)
+        .then((predictions: Array<Prediction>) => {
+          if (predictions.length) {
+            // if hands on screen - set coords
+            const [x1, y1] = predictions[0].bbox;
+            const [x2, y2] = predictions[1] ? predictions[1].bbox : [];
+            setHand1Position({ x: Math.round(x1), y: Math.round(y1) });
+            setHand2Position({ x: Math.round(x2), y: Math.round(y2) });
+          } else {
+            // else - remove coords
+            setHand1Position(emptyPoint);
+            setHand2Position(emptyPoint);
+          }
+        })
+        .catch((error) => console.error(error));
+    } catch (error) {
+      console.error(error);
+    }
   }, [model]);
 
   useEffect(() => {
